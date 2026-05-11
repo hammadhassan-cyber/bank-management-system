@@ -1,208 +1,46 @@
 # Bank Management System in C++
 
-A Console-Based **Bank Management System** developed in **C++** using **Object-Oriented Programming (OOP)** concepts.
+A simple console-based Bank Management System implemented in C++ using Object-Oriented Programming (OOP) principles such as Inheritance, Encapsulation, and Polymorphism.
 
-This project allows users to perform banking operations such as:
+## Features
 
-- Account Creation
-- Deposit & Withdrawal
-- Fund Transfer
-- Balance Inquiry
-- Transaction History
-- Account Modification
-- Account Deletion
-- Listing All Accounts
+- **Account Management**: Support for two types of accounts:
+  - **Savings Account**: Features a fixed interest rate.
+  - **Current Account**: Features an overdraft limit for flexible withdrawals.
+- **Transactions**: Perform deposits and withdrawals with real-time balance updates.
+- **Balance Inquiries**: Check the balance and account details using a unique Account Number.
+- **Data Display**: List all registered customers and their respective account information.
+- **Input Validation**: Basic handling for invalid transaction amounts and non-integer menu selections.
 
----
+## OOP Concepts Used
 
-# Features
+- **Inheritance**: `SavingsAccount` and `CurrentAccount` inherit from the base `Account` class.
+- **Encapsulation**: Customer and Account data are managed within classes to protect data integrity.
+- **Method Overriding**: The `withdraw` method is overridden in the `CurrentAccount` class to handle overdraft logic.
+- **Composition**: The `Bank` class uses arrays of objects to manage multiple customers and accounts.
 
-## 1. Account Creation
-- Create Savings Account
-- Create Current Account
-- Auto-generated Account Numbers
-- Store Customer Information
+## How to Run
 
----
+1.  Ensure you have a C++ compiler installed (e.g., `g++`).
+2.  Save the source code to a file named `main.cpp`.
+3.  Open your terminal or command prompt.
+4.  Compile the code:
+    ```bash
+    g++ main.cpp -o BankSystem
+    ```
+Run the executable:
+    ```bash
+    ./BankSystem
+    ```
 
-## 2. Deposit Money
-- Deposit cash into account
-- Automatic balance update
-- Transaction history maintenance
+## Usage
 
----
-
-## 3. Withdraw Money
-- Withdraw funds securely
-- Insufficient balance validation
-- Automatic balance deduction
-
----
-
-## 4. Fund Transfer
-- Transfer money between accounts
-- Sender and receiver validation
-- Automatic deduction and credit
+Follow the on-screen menu to:
+1.  **Open Account**: Choose between Savings or Current and provide initial details.
+2.  **Deposit**: Add funds to a specific account using the ID.
+3.  **Withdraw**: Remove funds (respecting balance or overdraft limits).
+4.  **Check Balance**: View specific holder info.
+5.  **Display All**: Overview of all bank records.
 
 ---
-
-## 5. Balance Inquiry
-- Check current balance
-- View transaction history
-
----
-
-## 6. Account Modification
-Update customer details:
-- Name
-- Phone Number
-- Address
-
----
-
-## 7. Account Deletion
-- Delete account only when balance is zero
-- Prevent accidental deletion
-
----
-
-## 8. List All Accounts
-Display all accounts in a formatted table including:
-- Account Number
-- Holder Name
-- Account Type
-- Balance
-- Status
-
----
-
-# OOP Concepts Used
-
-| Concept | Usage |
-|---|---|
-| Classes & Objects | Used to model banking entities |
-| Encapsulation | Data and functions combined in classes |
-| Inheritance | SavingsAccount and CurrentAccount inherit Account |
-| Polymorphism | Virtual functions used |
-| Constructors | Initialize objects |
-| Destructors | Free dynamically allocated memory |
-| Abstraction | Complex logic hidden from user |
-
----
-
-# Technologies Used
-
-- C++
-- Object-Oriented Programming
-- STL Vector
-- Console-Based Interface
-
----
-
-# Classes Used
-
-## 1. Transaction
-Stores:
-- Transaction Type
-- Transaction Amount
-
----
-
-## 2. Account (Abstract Base Class)
-Stores:
-- Account Number
-- Holder Name
-- Phone
-- Address
-- Balance
-- Transaction History
-
-Functions:
-- Deposit
-- Withdraw
-- Transfer
-- Show Balance
-- Modify Account
-
----
-
-## 3. SavingsAccount
-Derived from `Account` class.
-
----
-
-## 4. CurrentAccount
-Derived from `Account` class.
-
----
-
-## 5. Bank
-Controls the entire banking system.
-
-Functions:
-- Create Account
-- Find Account
-- Deposit
-- Withdraw
-- Transfer
-- Delete Account
-- List Accounts
-
----
-
-# Project Structure
-
-```text
-Bank Management System
-│
-├── Transaction Class
-├── Account Class
-│   ├── SavingsAccount
-│   └── CurrentAccount
-│
-└── Bank Class
-```
----
-
-# How to Run
-
-## Step 1
-Save the file as:
-
-```text
-bank_management.cpp
-```
----
-
-## Step 2
-Compile the program:
-
-```bash
-g++ bank_management.cpp -o bank
-```
-
----
-
-## Step 3
-Run the program:
-
-```bash
-./bank
-```
-
-# Learning Outcomes
-
-By building this project, students learn:
-
-- Object-Oriented Programming
-- Class Relationships
-- Dynamic Memory Allocation
-- Pointers
-- Vectors
-- Menu-Driven Programming
-- Problem Solving
-- Banking Logic Implementation
-
----
-# License
-This project is for educational purposes only.
+*Note: This system uses fixed-size arrays (100 accounts) and does not persist data to a database or file; data is cleared when the program exits.*
