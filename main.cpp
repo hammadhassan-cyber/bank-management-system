@@ -1,488 +1,295 @@
 #include <iostream>
-#include <vector>
+#include <string>
 #include <iomanip>
+
 using namespace std;
 
-class Transaction
-{
+// Class to store customer details
+class Customer {
     public:
-        string type;
-        double amount;
+        string name;
 
-        Transaction(string t, double a)
-        {
-            type = t;
-            amount = a;
+        Customer() {
+            name = "";
+        }
+
+        Customer(string n) {
+            name = n;
         }
 };
 
-class Account
-{
-    protected:
+// Base class for bank accounts
+class Account {
+    public:
         int accountNumber;
-        string holderName;
-        string phone;
-        string address;
-        string status;
         double balance;
 
-        vector<Transaction> transactions;
+        Account() {
+            accountNumber = 0;
+            balance = 0.0;
+        }
 
-    public:
-        Account(int accNo, string name, string ph, string addr, double bal)
-        {
+        Account(int accNo, double bal) {
             accountNumber = accNo;
-            holderName = name;
-            phone = ph;
-            address = addr;
             balance = bal;
-            status = "Active";
         }
 
-        virtual string getType() = 0;
-
-        int getAccountNumber()
-        {
-            return accountNumber;
-        }
-
-        double getBalance()
-        {
-            return balance;
-        }
-
-        string getName()
-        {
-            return holderName;
-        }
-
-        void deposit(double amount)
-        {
-            if (amount > 0)
-            {
+        // Standard deposit logic
+        void deposit(double amount) {
+            if (amount > 0) {
                 balance += amount;
-                transactions.push_back(Transaction("Deposit", amount));
-
-                cout << "\nAmount Deposited Successfully!\n";
-            }
-            else
-            {
-                cout << "\nInvalid Amount!\n";
+                cout << "Deposited: $" << fixed << setprecision(2) << amount << endl;
+            } else {
+                cout << "Invalid amount!" << endl;
             }
         }
 
-        virtual void withdraw(double amount)
-        {
-            if (amount <= balance)
-            {
+        // Standard withdrawal logic
+        void withdraw(double amount) {
+            if (amount > 0 && amount <= balance) {
                 balance -= amount;
-
-                transactions.push_back(Transaction("Withdrawal", amount));
-
-                cout << "\nWithdrawal Successful!\n";
-            }
-            else
-            {
-                cout << "\nInsufficient Balance!\n";
+                cout << "Withdrawn: $" << fixed << setprecision(2) << amount << endl;
+            } else {
+                cout << "Insufficient funds!" << endl;
             }
         }
 
-        void transfer(Account *receiver, double amount)
-        {
-            if (amount <= balance)
-            {
+        // Helper to check if ID matches
+        bool matchesId(int id) {
+            return accountNumber == id;
+        }
+
+        void display() {
+            cout << "Acc No: " << accountNumber << " | Balance: $" << fixed << setprecision(2) << balance << endl;
+        }
+};
+
+// Derived class for Savings Accounts with interest rates
+class SavingsAccount : public Account {
+    public:
+        double interestRate;
+
+        SavingsAccount() {
+            interestRate = 0.0;
+        }
+
+        SavingsAccount(int a, double b, double r) {
+            accountNumber = a;
+            balance = b;
+            interestRate = r;
+        }
+
+        // Overridden display for Savings type
+        void display() {
+            cout << "Type: Savings | ";
+            Account::display();
+        }
+};
+
+// Derived class for Current Accounts with overdraft features
+class CurrentAccount : public Account {
+    public:
+        double overdraftLimit;
+
+        CurrentAccount() {
+            overdraftLimit = 0.0;
+        }
+
+        CurrentAccount(int a, double b, double l) {
+            accountNumber = a;
+            balance = b;
+            overdraftLimit = l;
+        }
+
+        // Overridden withdraw to handle overdraft limit
+        void withdraw(double amount) {
+            if (amount > 0 && amount <= (balance + overdraftLimit)) {
                 balance -= amount;
-                receiver->balance += amount;
-
-                transactions.push_back(Transaction("Transfer Sent", amount));
-                receiver->transactions.push_back(Transaction("Transfer Received", amount));
-
-                cout << "\nTransfer Successful!\n";
-            }
-            else
-            {
-                cout << "\nInsufficient Balance!\n";
+                cout << "Withdrawn: $" << fixed << setprecision(2) << amount << endl;
+            } else {
+                cout << "Overdraft limit exceeded!" << endl;
             }
         }
 
-        void showBalance()
-        {
-            cout << "\nCurrent Balance: Rs. " << balance << endl;
-        }
-
-        void showTransactions()
-        {
-            cout << "\n===== Transaction History =====\n";
-
-            if (transactions.empty())
-            {
-                cout << "No Transactions Found!\n";
-            }
-            else
-            {
-                for (int i = 0; i < transactions.size(); i++)
-                {
-                    cout << i + 1 << ". "
-                        << transactions[i].type
-                        << " - Rs. "
-                        << transactions[i].amount << endl;
-                }
-            }
-        }
-
-        void modifyAccount()
-        {
-            cin.ignore();
-
-            cout << "\nEnter New Name: ";
-            getline(cin, holderName);
-
-            cout << "Enter New Phone: ";
-            getline(cin, phone);
-
-            cout << "Enter New Address: ";
-            getline(cin, address);
-
-            cout << "\nAccount Updated Successfully!\n";
-        }
-
-        void display()
-        {
-            cout << left
-                << setw(15) << accountNumber
-                << setw(20) << holderName
-                << setw(15) << getType()
-                << setw(15) << balance
-                << setw(15) << status
-                << endl;
-        }
-
-        virtual ~Account()
-        {
-            }
-};
-
-class SavingsAccount : public Account
-{
-    public:
-        SavingsAccount(int accNo, string name, string ph, string addr, double bal)
-            : Account(accNo, name, ph, addr, bal)
-        {
-        }
-
-        string getType()
-        {
-            return "Savings";
+        void display() {
+            cout << "Type: Current | ";
+            Account::display();
         }
 };
 
-class CurrentAccount : public Account
-{
-    public:
-        CurrentAccount(int accNo, string name, string ph, string addr, double bal)
-            : Account(accNo, name, ph, addr, bal)
-        {
-        }
-
-        string getType()
-        {
-            return "Current";
-        }
-};
-
-class Bank
-{
+// Management class to handle account operations
+class Bank {
     private:
-        vector<Account *> accounts;
-        int nextAccountNumber = 1001;
+        Customer customers[100];
+        SavingsAccount savings[100];
+        CurrentAccount currents[100];
+        int sCount, cCount, nextAccountNumber;
+
+        // Search functions to find account indices
+        int findSavings(int id) {
+            for (int i = 0; i < sCount; i++)
+                if (savings[i].matchesId(id)) return i;
+            return -1;
+        }
+
+        int findCurrent(int id) {
+            for (int i = 0; i < cCount; i++)
+                if (currents[i].matchesId(id)) return i;
+            return -1;
+        }
 
     public:
-        void createAccount()
-        {
-            int choice;
-            string name, phone, address;
-            double depositAmount;
+        Bank() {
+            sCount = cCount = 0;
+            nextAccountNumber = 1001;
+        }
 
-            cout << "\n1. Savings Account";
-            cout << "\n2. Current Account";
-            cout << "\nChoose Account Type: ";
-            cin >> choice;
+        // logic to create new accounts
+        void openAccount() {
+            int type;
+            double bal;
+            string name;
 
+            cout << "\n--- Select Account Type ---\n1. Savings\n2. Current\nChoice: ";
+            cin >> type;
+
+            cout << "Enter Name: ";
             cin.ignore();
-
-            cout << "Enter Holder Name: ";
             getline(cin, name);
+            cout << "Initial Balance: $";
+            cin >> bal;
 
-            cout << "Enter Phone Number: ";
-            getline(cin, phone);
-
-            cout << "Enter Address: ";
-            getline(cin, address);
-
-            cout << "Enter Initial Deposit: ";
-            cin >> depositAmount;
-
-            Account *acc;
-
-            if (choice == 1)
-            {
-                acc = new SavingsAccount(nextAccountNumber, name, phone, address, depositAmount);
+            if (type == 1) {
+                customers[sCount] = Customer(name);
+                savings[sCount] = SavingsAccount(nextAccountNumber, bal, 5.0);
+                cout << "Savings Account Created! ID: " << nextAccountNumber << endl;
+                sCount++;
+            } else if (type == 2) {
+                customers[cCount] = Customer(name);
+                currents[cCount] = CurrentAccount(nextAccountNumber, bal, 1000.0);
+                cout << "Current Account Created! ID: " << nextAccountNumber << endl;
+                cCount++;
+            } else {
+                cout << "Invalid type selected!\n";
+                return;
             }
-            else
-            {
-                acc = new CurrentAccount(nextAccountNumber, name, phone, address, depositAmount);
-            }
-
-            accounts.push_back(acc);
-
-            cout << "\nAccount Created Successfully!";
-            cout << "\nAccount Number: " << nextAccountNumber << endl;
-
             nextAccountNumber++;
         }
 
-        Account *findAccount(int accNo)
-        {
-            for (int i = 0; i < accounts.size(); i++)
-            {
-                if (accounts[i]->getAccountNumber() == accNo)
-                {
-                    return accounts[i];
-                }
-            }
-
-            return NULL;
-        }
-
-        void depositMoney()
-        {
+        // logic for processing deposits
+        void deposit() {
             int accNo;
             double amount;
-
-            cout << "\nEnter Account Number: ";
+            cout << "Account No: ";
             cin >> accNo;
+            cout << "Amount: $";
+            cin >> amount;
 
-            Account *acc = findAccount(accNo);
-
-            if (acc != NULL)
-            {
-                cout << "Enter Amount: ";
-                cin >> amount;
-
-                acc->deposit(amount);
-            }
-            else
-            {
-                cout << "\nAccount Not Found!\n";
+            int s = findSavings(accNo), c = findCurrent(accNo);
+            if (s != -1) {
+                savings[s].deposit(amount);
+            } 
+            else if (c != -1) {
+                currents[c].deposit(amount);
+            } 
+            else {
+                cout << "Account not found!\n";
             }
         }
 
-        void withdrawMoney()
-        {
+        // logic for processing withdrawals
+        void withdraw() {
             int accNo;
             double amount;
-
-            cout << "\nEnter Account Number: ";
+            cout << "Account No: ";
             cin >> accNo;
+            cout << "Amount: $";
+            cin >> amount;
 
-            Account *acc = findAccount(accNo);
-
-            if (acc != NULL)
-            {
-                cout << "Enter Amount: ";
-                cin >> amount;
-
-                acc->withdraw(amount);
-            }
-            else
-            {
-                cout << "\nAccount Not Found!\n";
-            }
+            int s = findSavings(accNo), c = findCurrent(accNo);
+            if (s != -1) 
+                savings[s].withdraw(amount);
+            else if (c != -1) 
+                currents[c].withdraw(amount);
+            else 
+                cout << "Account not found!\n";
         }
 
-        void transferMoney()
-        {
-            int senderNo, receiverNo;
-            double amount;
-
-            cout << "\nEnter Sender Account Number: ";
-            cin >> senderNo;
-
-            cout << "Enter Receiver Account Number: ";
-            cin >> receiverNo;
-
-            Account *sender = findAccount(senderNo);
-            Account *receiver = findAccount(receiverNo);
-
-            if (sender != NULL && receiver != NULL)
-            {
-                cout << "Enter Transfer Amount: ";
-                cin >> amount;
-
-                sender->transfer(receiver, amount);
-            }
-            else
-            {
-                cout << "\nInvalid Account Number!\n";
-            }
-        }
-
-        void balanceInquiry()
-        {
+        // Display individual balance info
+        void checkBalance() {
             int accNo;
-
-            cout << "\nEnter Account Number: ";
+            cout << "Account No: ";
             cin >> accNo;
 
-            Account *acc = findAccount(accNo);
-
-            if (acc != NULL)
-            {
-                acc->showBalance();
-                acc->showTransactions();
-            }
-            else
-            {
-                cout << "\nAccount Not Found!\n";
-            }
-        }
-
-        void modifyAccount()
-        {
-            int accNo;
-
-            cout << "\nEnter Account Number: ";
-            cin >> accNo;
-
-            Account *acc = findAccount(accNo);
-
-            if (acc != NULL)
-            {
-                acc->modifyAccount();
-            }
-            else
-            {
-                cout << "\nAccount Not Found!\n";
+            int s = findSavings(accNo), c = findCurrent(accNo);
+            if (s != -1) {
+                cout << "Holder: " << customers[s].name << "\n";
+                savings[s].display();
+            } 
+            else if (c != -1) {
+                cout << "Holder: " << customers[c].name << "\n";
+                currents[c].display();
+            } 
+            else {
+                cout << "Account not found!\n";
             }
         }
 
-        void deleteAccount()
-        {
-            int accNo;
-
-            cout << "\nEnter Account Number: ";
-            cin >> accNo;
-
-            for (int i = 0; i < accounts.size(); i++)
-            {
-                if (accounts[i]->getAccountNumber() == accNo)
-                {
-                    if (accounts[i]->getBalance() == 0)
-                    {
-                        delete accounts[i];
-
-                        accounts.erase(accounts.begin() + i);
-
-                        cout << "\nAccount Deleted Successfully!\n";
-                    }
-                    else
-                    {
-                        cout << "\nBalance Must Be Zero Before Deletion!\n";
-                    }
-                    return;
-                }
+        // List all registered accounts
+        void displayAll() {
+            if (sCount == 0 && cCount == 0) {
+                cout << "No accounts found!\n";
+                return;
             }
-            cout << "\nAccount Not Found!\n";
-        }
-
-        void listAccounts()
-        {
-            cout << "\n================ ALL ACCOUNTS ================\n\n";
-            cout << left
-                << setw(15) << "Acc Number"
-                << setw(20) << "Holder Name"
-                << setw(15) << "Type"
-                << setw(15) << "Balance"
-                << setw(15) << "Status"
-                << endl;
-            cout << "-------------------------------------------------------------------\n";
-
-            for (int i = 0; i < accounts.size(); i++)
-            {
-                accounts[i]->display();
+            cout << "\n--- ALL ACCOUNTS ---\n";
+            for (int i = 0; i < sCount; i++) {
+                cout << customers[i].name << "\n";
+                savings[i].display();
+                cout << "-----------------------\n";
             }
-        }
-
-        ~Bank()
-        {
-            for (int i = 0; i < accounts.size(); i++)
-            {
-                delete accounts[i];
+            for (int i = 0; i < cCount; i++) {
+                cout << customers[i].name << "\n";
+                currents[i].display();
+                cout << "-----------------------\n";
             }
         }
 };
 
-int main()
-{
+int main() {
     Bank bank;
     int choice;
-    do
-    {
-        cout << "\n========== BANK MANAGEMENT SYSTEM ==========\n";
-        cout << "\n1. Create Account";
-        cout << "\n2. Deposit Money";
-        cout << "\n3. Withdraw Money";
-        cout << "\n4. Transfer Money";
-        cout << "\n5. Balance Inquiry";
-        cout << "\n6. Modify Account";
-        cout << "\n7. Delete Account";
-        cout << "\n8. List All Accounts";
-        cout << "\n9. Exit";
-        cout << "\n\nEnter Your Choice: ";
-        cin >> choice;
-        switch (choice)
-        {
-        case 1:
-            bank.createAccount();
-            break;
+    cout << "==================================\n     BANK MANAGEMENT SYSTEM     \n==================================\n";
 
-        case 2:
-            bank.depositMoney();
-            break;
+    // Main program loop
+    do {
+        cout << "\n--- MAIN MENU ---\n1. Open Account\n2. Deposit\n3. Withdraw\n4. Check Balance\n5. Display All\n6. Exit\nChoice: ";
 
-        case 3:
-            bank.withdrawMoney();
-            break;
-
-        case 4:
-            bank.transferMoney();
-            break;
-
-        case 5:
-            bank.balanceInquiry();
-            break;
-
-        case 6:
-            bank.modifyAccount();
-            break;
-
-        case 7:
-            bank.deleteAccount();
-            break;
-
-        case 8:
-            bank.listAccounts();
-            break;
-
-        case 9:
-            cout << "\nThank You For Using Bank Management System!\n";
-            break;
-
-        default:
-            cout << "\nInvalid Choice!\n";
+        // Handle non-integer input to prevent infinite loops
+        if (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            choice = 0;
+            continue;
         }
 
-    } while (choice != 9);
+        switch (choice) {
+            case 1: 
+                bank.openAccount(); break;
+            case 2: 
+                bank.deposit(); break;
+            case 3: 
+                bank.withdraw(); break;
+            case 4:
+                bank.checkBalance(); break;
+            case 5: 
+                bank.displayAll(); break;
+            case 6: 
+                cout << "Thank you for banking with us!\n"; break;
+            default: 
+                cout << "Invalid choice!\n";
+        }
+    } 
+    while (choice != 6);
 
     return 0;
 }
